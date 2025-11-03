@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Search } from 'lucide-react';
 import { MOCK_PRODUCTS } from '../data/mockData';
-import MinimalProductCard from '../components/MinimalProductCard';
+// --- IMPORT YOUR NEW CARD ---
+import ProductCard from '../components/ProductCard'; 
 
 const CategoryShopPage = ({ categoryName, setView, onAddToCart }) => {
     const [products, setProducts] = useState([]);
@@ -28,6 +29,7 @@ const CategoryShopPage = ({ categoryName, setView, onAddToCart }) => {
 
     }, [categoryName, searchTerm]);
 
+    // --- THIS FUNCTION IS NOW UPDATED ---
     const renderContent = () => {
         if (loading) {
             return (
@@ -46,10 +48,11 @@ const CategoryShopPage = ({ categoryName, setView, onAddToCart }) => {
             );
         }
 
+        // --- UPDATED THIS BLOCK TO USE A GRID & THE NEW ProductCard ---
         return (
-            <div className="bg-white rounded-xl shadow-xl divide-y divide-gray-100">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {products.map(product => (
-                    <MinimalProductCard 
+                    <ProductCard 
                         key={product.ProductID} 
                         product={product} 
                         onAddToCart={onAddToCart} 
@@ -60,7 +63,8 @@ const CategoryShopPage = ({ categoryName, setView, onAddToCart }) => {
     };
 
     return (
-        <div className="pt-24 pb-12 max-w-4xl mx-auto px-4">
+        // The rest of your component stays the same
+        <div className="pt-24 pb-12 max-w-6xl mx-auto px-4"> {/* Increased max-width for the grid */}
             {/* Header and Search */}
             <div className="mb-8">
                 <button
@@ -88,7 +92,7 @@ const CategoryShopPage = ({ categoryName, setView, onAddToCart }) => {
             {renderContent()}
 
             <p className="text-center text-sm text-gray-500 mt-6">
-                Displaying {products.length} products. (Simulated pagination/fetching for 6000+ items would go here.)
+                Displaying {products.length} products.
             </p>
         </div>
     );
