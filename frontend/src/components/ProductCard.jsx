@@ -1,21 +1,20 @@
 import React, { useState } from 'react';
 import { Plus, Minus, X } from 'lucide-react';
 
-const ProductCard = ({ product, onAddToCart }) => {
-    const [quantity, setQuantity] = useState(0);
+const ProductCard = ({ product, onAddToCart, cartItems = [] }) => {
     const [showModal, setShowModal] = useState(false);
 
+    // Find current quantity from global cartItems state
+    const currentItem = cartItems.find(item => (item._id || item.id) === (product._id || product.id));
+    const quantity = currentItem ? currentItem.quantity : 0;
+
     const handleIncrement = () => {
-        const newQuantity = quantity + 1;
-        setQuantity(newQuantity);
-        onAddToCart(product, newQuantity);
+        onAddToCart(product, quantity + 1);
     };
 
     const handleDecrement = () => {
         if (quantity > 0) {
-            const newQuantity = quantity - 1;
-            setQuantity(newQuantity);
-            onAddToCart(product, newQuantity);
+            onAddToCart(product, quantity - 1);
         }
     };
 
@@ -36,12 +35,8 @@ const ProductCard = ({ product, onAddToCart }) => {
                     </h3>
 
                     <div className="flex items-center gap-2 mb-3">
-                        <span className="text-lg font-bold text-gray-900">
-                            ₹{product.discountedPrice}
-                        </span>
-                        <span className="text-sm text-gray-500 line-through">
-                            ₹{product.price}
-                        </span>
+                        <span className="text-lg font-bold text-gray-900">₹{product.discountedPrice}</span>
+                        <span className="text-sm text-gray-500 line-through">₹{product.price}</span>
                     </div>
                 </div>
 
@@ -54,44 +49,24 @@ const ProductCard = ({ product, onAddToCart }) => {
                     </button>
                 ) : (
                     <div className="flex items-center justify-between bg-green-50 border-2 border-green-600 rounded-lg p-2">
-                        <button
-                            onClick={handleDecrement}
-                            className="text-green-600 hover:bg-green-100 rounded p-1 transition-colors"
-                        >
+                        <button onClick={handleDecrement} className="text-green-600 hover:bg-green-100 rounded p-1 transition-colors">
                             <Minus size={18} />
                         </button>
                         <span className="font-bold text-green-700">{quantity}</span>
-                        <button
-                            onClick={handleIncrement}
-                            className="text-green-600 hover:bg-green-100 rounded p-1 transition-colors"
-                        >
+                        <button onClick={handleIncrement} className="text-green-600 hover:bg-green-100 rounded p-1 transition-colors">
                             <Plus size={18} />
                         </button>
                     </div>
                 )}
             </div>
 
-            {/* ✅ Image Modal */}
             {showModal && (
-                <div
-                    className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50"
-                    onClick={() => setShowModal(false)}
-                >
-                    <div
-                        className="relative bg-white rounded-lg p-3 shadow-lg max-w-3xl max-h-[90vh]"
-                        onClick={(e) => e.stopPropagation()} // prevent closing when clicking image area
-                    >
-                        <button
-                            onClick={() => setShowModal(false)}
-                            className="absolute top-2 right-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full p-1 transition"
-                        >
+                <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50" onClick={() => setShowModal(false)}>
+                    <div className="relative bg-white rounded-lg p-3 shadow-lg max-w-3xl max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+                        <button onClick={() => setShowModal(false)} className="absolute top-2 right-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full p-1 transition">
                             <X size={20} />
                         </button>
-                        <img
-                            src={product.imageUrl}
-                            alt={product.productName}
-                            className="max-w-full max-h-[80vh] object-contain rounded-lg"
-                        />
+                        <img src={product.imageUrl} alt={product.productName} className="max-w-full max-h-[80vh] object-contain rounded-lg" />
                     </div>
                 </div>
             )}

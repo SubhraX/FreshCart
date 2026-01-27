@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { ConnectDB } from "./src/lib/db.js";
 import itemRoutes from './src/routes/item.route.js';
+import authRoutes from './src/routes/auth.route.js'; // NEW IMPORT for authentication routes
 
 dotenv.config();
 
@@ -15,20 +16,16 @@ app.use(cors({
 
 app.use(express.json());
 
+// Existing route for items
 app.use('/items', itemRoutes);
+
+// NEW: Mount authentication routes at '/api/auth'
+// This matches the LOGIN_ENDPOINT and SIGNUP_ENDPOINT paths used in the frontend.
+app.use('/api/auth', authRoutes);
 
 const PORT = process.env.PORT;
 
-const startServer = async () => {
-    try {
-        await ConnectDB();
-        app.listen(PORT, () => {
-            console.log(`✅ Server running on http://localhost:${PORT}`);
-        });
-    } catch (error) {
-        console.error('❌ Failed to start server:', error);
-        process.exit(1);
-    }
-};
-
-startServer();
+app.listen(PORT, () => {
+    console.log(`Server running on port: ${PORT}`);
+    ConnectDB();
+});
