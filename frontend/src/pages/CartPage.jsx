@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, Trash2, Plus, Minus, ShoppingBag, CreditCard, MapPin } from 'lucide-react';
+import { toast } from "react-toastify";
 
 const CartPage = ({ cartItems, onAddToCart, setView }) => {
 
@@ -25,35 +26,47 @@ const CartPage = ({ cartItems, onAddToCart, setView }) => {
   };
 
   const handleCheckout = async () => {
-  if (!address.fullName || !address.phone || !address.street || !address.pincode) {
-    alert("Please fill in all delivery address details.");
-    return;
-  }
-
-  try {
-    const response = await fetch("http://localhost:5000/api/payment/create-checkout-session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        items: cartItems,
-        deliveryFee: deliveryFee
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!data.url) {
-      alert("Failed to create checkout session.");
+    if (!address.fullName || !address.phone || !address.street || !address.pincode) {
+      toast.error("Please fill in all delivery address details.", {
+        toastId: "address-error"
+      });
       return;
     }
 
-    window.location.href = data.url;
+    try {
+      const response = await fetch("http://localhost:5000/api/payment/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: cartItems,
+          deliveryFee: deliveryFee
+        }),
+      });
 
-  } catch (error) {
-    console.error(error);
-    alert("Payment failed. Try again.");
-  }
-};
+      const data = await response.json();
+
+      if (!data.url) {
+        toast.error("Failed to create checkout session.", {
+          toastId: "checkout-error"
+        });
+        return;
+      }
+
+      toast.success("Redirecting to secure payment...", {
+        toastId: "redirecting"
+      });
+
+      setTimeout(() => {
+        window.location.href = data.url;
+      }, 1200);
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Payment failed. Please try again.", {
+        toastId: "payment-error"
+      });
+    }
+  };
 
   if (cartItems.length === 0) {
     return (

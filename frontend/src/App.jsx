@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import Header from './components/Header';
 import HomePage from './pages/HomePage';
 import CategoryShopPage from './pages/CategoryShopPage';
 import LoginPage from './pages/LoginPage';
 import CartPage from './pages/CartPage';
-import SuccessPage from './pages/SuccessPage'; // ✅ NEW
+import SuccessPage from './pages/SuccessPage';
 
 const slugToName = (slug) => {
   return slug
@@ -19,7 +21,6 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
 
-  // CART STATE
   const [cartItems, setCartItems] = useState(() => {
     const savedCart = localStorage.getItem('freshcart_items');
     return savedCart ? JSON.parse(savedCart) : [];
@@ -34,7 +35,6 @@ export default function App() {
     0
   );
 
-  // AUTH CHECK
   const checkAuthStatus = () => {
     const token = localStorage.getItem('auth_token');
     const savedUser = localStorage.getItem('user');
@@ -52,7 +52,7 @@ export default function App() {
       setView({ name: 'login' });
     } else if (path === '/cart') {
       setView({ name: 'cart' });
-    } else if (path === '/success') { // ✅ NEW
+    } else if (path === '/success') {
       setView({ name: 'success' });
     } else if (path === '/shop') {
       setView({ name: 'shop', categoryName: 'all' });
@@ -71,7 +71,7 @@ export default function App() {
 
       if (path === '/login') setView({ name: 'login' });
       else if (path === '/cart') setView({ name: 'cart' });
-      else if (path === '/success') setView({ name: 'success' }); // ✅ NEW
+      else if (path === '/success') setView({ name: 'success' });
       else if (path === '/shop') setView({ name: 'shop', categoryName: 'all' });
       else if (path.startsWith('/category/')) {
         const categorySlug = path.replace('/category/', '');
@@ -91,7 +91,7 @@ export default function App() {
 
     if (newView.name === 'login') path = '/login';
     else if (newView.name === 'cart') path = '/cart';
-    else if (newView.name === 'success') path = '/success'; // ✅ NEW
+    else if (newView.name === 'success') path = '/success';
     else if (newView.name === 'shop') {
       if (newView.categoryName && newView.categoryName !== 'all') {
         const slug = newView.categoryName
@@ -108,7 +108,7 @@ export default function App() {
 
   const handleAddToCart = (product, newQuantity) => {
     if (!isLoggedIn) {
-      alert("Please log in to add items to your cart.");
+      toast.warning("Please log in to add items to your cart.");
       navigate({ name: 'login' });
       return;
     }
@@ -161,7 +161,7 @@ export default function App() {
           />
         );
 
-      case 'success': // ✅ NEW
+      case 'success':
         return (
           <SuccessPage
             cartItems={cartItems}
@@ -178,6 +178,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
+
       <Header
         setView={navigate}
         isLoggedIn={isLoggedIn}
@@ -189,9 +190,27 @@ export default function App() {
         {renderView()}
       </main>
 
+      {/* 🔥 React Toastify Container */}
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        theme="light"
+        closeOnClick
+        pauseOnHover
+        draggable
+        toastStyle={{
+          fontSize: "16px",
+          borderRadius: "12px",
+          padding: "16px",
+          width: "380px",
+          textAlign: "center"
+        }}
+      />
+
       <footer className="mt-12 pt-6 pb-6 border-t border-gray-200 text-center text-xs text-gray-400 max-w-6xl mx-auto px-4">
         <p>FreshCart Frontend: Refactored to component-based architecture.</p>
       </footer>
+
     </div>
   );
 }
