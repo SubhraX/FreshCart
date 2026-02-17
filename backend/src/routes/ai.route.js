@@ -10,7 +10,7 @@ router.post("/recipe", async (req, res) => {
     const { dish } = req.body;
     if (!dish) return res.status(400).json({ message: "Dish name required" });
 
-    // 1. AI GENERATION - Use broader prompts for better coverage
+    // 1. AI GENERATION
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Provide a JSON array of raw ingredients for "${dish}". Keep names simple (e.g., "chicken", "chilli", "oil").`
@@ -18,7 +18,7 @@ router.post("/recipe", async (req, res) => {
 
     const ingredientList = JSON.parse(response.text.match(/\[.*\]/s)[0]);
 
-    // 2. FETCH ALL POTENTIAL COOKING CATEGORIES
+    // 2. FETCH DATABASE
     const cookingCategories = [
       "Bakery, Cakes & Dairy",
       "Foodgrains, Oil & Masala",
@@ -27,15 +27,14 @@ router.post("/recipe", async (req, res) => {
     ];
     const products = await Item.find({ category: { $in: cookingCategories } });
 
-    // 3. SUPER FLEXIBLE MATCHING LOGIC
+    // 3. UPDATED BULLETPROOF MATCHING LOGIC
     const result = ingredientList.map((ingredient) => {
       const rawInput = ingredient.toLowerCase().trim();
       
-      // Normalize: "chilly" & "chilli" -> "chill", "potatoes" -> "potato"
       const normalize = (str) => str.replace(/ies$|s$|i$|y$/g, '');
       
       const searchTerms = rawInput
-        .split(/[\s-]+/) // Split by space or hyphen
+        .split(/[\s-]+/)
         .map(term => normalize(term))
         .filter(term => term.length > 2);
 
@@ -43,37 +42,48 @@ router.post("/recipe", async (req, res) => {
         .map(product => {
           const name = product.productName.toLowerCase();
           const normalizedName = normalize(name);
+          const category = product.category;
           let score = 0;
 
-          // A. Term Matching: Count how many words match (even partially)
-          const matches = searchTerms.filter(term => normalizedName.includes(term));
-          
-          // If NOT A SINGLE TERM matches, it's irrelevant
-          if (matches.length === 0) return null;
+          // --- FIX 1: THE DEALBREAKER (Anti-Eggless/Sugar-free) ---
+          const negatives = ["less", "free", "substitute", "alternative"];
+          if (negatives.some(n => name.includes(rawInput + n) || name.includes(rawInput + "-" + n))) {
+            return null; 
+          }
 
-          // B. Base Score: Points per matching term
+          // A. Term Matching
+          const matches = searchTerms.filter(term => normalizedName.includes(term));
+          if (matches.length === 0) return null;
           score += (matches.length * 20);
 
-          // C. Sequence Bonus: Did they appear in the original order?
+          // --- FIX 2: CATEGORY ANCHORING (Massive Priority) ---
+          if (["egg", "chicken", "meat", "fish"].some(word => rawInput.includes(word))) {
+            if (category === "Eggs, Meat & Fish") score += 150; 
+          }
+          if (["oil", "masala", "dal", "rice", "atta"].some(word => rawInput.includes(word))) {
+            if (category === "Foodgrains, Oil & Masala") score += 100;
+          }
+
+          // C. Sequence Bonus
           if (name.includes(rawInput)) score += 50;
 
-          // D. Exact Start Bonus: "Chicken..."
+          // D. Exact Word & Start Bonus
+          if (new RegExp(`\\b${rawInput}\\b`, 'i').test(name)) score += 60;
           if (name.startsWith(searchTerms[0])) score += 15;
 
-          // E. Soft Exclusion Penalty: We don't hide Masalas, we just push them down
-          const exclusions = ["masala", "powder", "mix", "paste"];
+          // E. Exclusion Penalty (Stronger)
+          const exclusions = ["masala", "powder", "mix", "paste", "ready", "instant"];
           const hasExclusion = exclusions.some(ex => name.includes(ex));
           
-          // If AI didn't ask for powder/masala, but product is one, penalize it
           if (hasExclusion && !rawInput.includes("masala") && !rawInput.includes("powder")) {
-            score -= 40; 
+            score -= 80; // Heavier penalty to keep masalas away from raw meat
           }
 
           return { product, score };
         })
-        .filter(item => item !== null) // Keep everything that had at least one word match
+        .filter(item => item !== null && item.score > 0)
         .sort((a, b) => b.score - a.score)
-        .slice(0, 8) // Show up to 8 options
+        .slice(0, 10)
         .map(item => item.product);
 
       return {
