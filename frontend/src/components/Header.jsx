@@ -24,13 +24,13 @@ const Header = ({ setView, isLoggedIn, cartCount, user }) => {
         {/* RIGHT SECTION */}
         <div className="flex items-center space-x-4">
 
-          {/* AI RECIPE BUTTON */}
+          
 <button
   onClick={() => setView({ name: "ai" })}
   className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-teal-400 to-cyan-500 text-white font-semibold rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
 >
   <Cpu size={18} />
-  <span>AI Recipe</span>
+  <span>ChefGen</span>
 </button>
 
 
