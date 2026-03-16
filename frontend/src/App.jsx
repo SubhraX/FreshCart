@@ -8,7 +8,8 @@ import CategoryShopPage from './pages/CategoryShopPage';
 import LoginPage from './pages/LoginPage';
 import CartPage from './pages/CartPage';
 import SuccessPage from './pages/SuccessPage';
-import AIRecipePage from './pages/AIRecipePage'; // ✅ NEW
+import AIRecipePage from './pages/AIRecipePage';
+import AIScorePage from './pages/AIScorePage'; // ✅ NEW
 
 const slugToName = (slug) => {
   return slug
@@ -55,8 +56,10 @@ export default function App() {
       setView({ name: 'cart' });
     } else if (path === '/success') {
       setView({ name: 'success' });
-    } else if (path === '/ai') { // ✅ NEW
+    } else if (path === '/ai') {
       setView({ name: 'ai' });
+    } else if (path === '/aiscore') { // ✅ NEW
+      setView({ name: 'aiscore' });
     } else if (path === '/shop') {
       setView({ name: 'shop', categoryName: 'all' });
     } else if (path.startsWith('/category/')) {
@@ -75,7 +78,8 @@ export default function App() {
       if (path === '/login') setView({ name: 'login' });
       else if (path === '/cart') setView({ name: 'cart' });
       else if (path === '/success') setView({ name: 'success' });
-      else if (path === '/ai') setView({ name: 'ai' }); // ✅ NEW
+      else if (path === '/ai') setView({ name: 'ai' });
+      else if (path === '/aiscore') setView({ name: 'aiscore' }); // ✅ NEW
       else if (path === '/shop') setView({ name: 'shop', categoryName: 'all' });
       else if (path.startsWith('/category/')) {
         const categorySlug = path.replace('/category/', '');
@@ -96,7 +100,8 @@ export default function App() {
     if (newView.name === 'login') path = '/login';
     else if (newView.name === 'cart') path = '/cart';
     else if (newView.name === 'success') path = '/success';
-    else if (newView.name === 'ai') path = '/ai'; // ✅ NEW
+    else if (newView.name === 'ai') path = '/ai';
+    else if (newView.name === 'aiscore') path = '/aiscore'; // ✅ NEW
     else if (newView.name === 'shop') {
       if (newView.categoryName && newView.categoryName !== 'all') {
         const slug = newView.categoryName
@@ -144,8 +149,15 @@ export default function App() {
 
   const renderView = () => {
     switch (view.name) {
+      case 'aiscore': // ✅ NEW
+        return (
+          <AIScorePage
+            cartItems={cartItems}
+            setView={navigate}
+          />
+        );
 
-      case 'ai': // ✅ NEW
+      case 'ai':
         return (
           <AIRecipePage
             setView={navigate}

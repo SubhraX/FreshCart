@@ -1,5 +1,6 @@
 import React from 'react';
-import { ShoppingCart, User, Cpu, LogOut } from 'lucide-react';
+import { ShoppingCart, User, Cpu, LogOut, Sparkles } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 const Header = ({ setView, isLoggedIn, cartCount, user }) => {
 
@@ -7,6 +8,15 @@ const Header = ({ setView, isLoggedIn, cartCount, user }) => {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user');
     window.location.reload();
+  };
+
+  // Updated logic to handle RateCart click with Toastify
+  const handleRateCartClick = () => {
+    if (cartCount === 0) {
+      toast.error("Your cart is empty! Add some items to analyze your cart score.");
+    } else {
+      setView({ name: "aiscore" });
+    }
   };
 
   return (
@@ -24,15 +34,22 @@ const Header = ({ setView, isLoggedIn, cartCount, user }) => {
         {/* RIGHT SECTION */}
         <div className="flex items-center space-x-4">
 
-          
-<button
-  onClick={() => setView({ name: "ai" })}
-  className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-teal-400 to-cyan-500 text-white font-semibold rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
->
-  <Cpu size={18} />
-  <span>ChefGen</span>
-</button>
+          {/* RATE CART BUTTON */}
+          <button
+            onClick={handleRateCartClick}
+            className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+          >
+            <Sparkles size={18} />
+            <span>RateCart</span>
+          </button>
 
+          <button
+            onClick={() => setView({ name: "ai" })}
+            className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-teal-400 to-cyan-500 text-white font-semibold rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+          >
+            <Cpu size={18} />
+            <span>ChefGen</span>
+          </button>
 
           {/* LOGIN / USER SECTION */}
           {!isLoggedIn ? (

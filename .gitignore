@@ -3,3 +3,32 @@
 
 # Ignore system files
 .DS_Store
+
+# Python Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+bin/
+lib/
+include/
+
+# AI Model Cache (Hugging Face)
+.cache/
+hub/
+models--microsoft--trocr-base-handwritten/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment Variables
+.env
+.env.local
+
+# Node.js
+node_modules/
+dist/
+build/
+.DS_Store
