@@ -40,7 +40,7 @@ const Header = ({ setView, isLoggedIn, cartCount, user }) => {
             className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
           >
             <Sparkles size={18} />
-            <span>RateCart</span>
+            <span>CartPulse</span>
           </button>
 
           <button

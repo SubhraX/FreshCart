@@ -45,7 +45,7 @@ const AIScore = ({ cartItems, setView }) => {
           <div className="p-8">
             {!result ? (
               <div className="text-center py-10">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">Ready to scan your cart?</h2>
+                <h2 className="text-xl font-bold text-gray-800 mb-4">Ready for a Cart Scan?</h2>
                 <p className="text-gray-500 mb-8">We will analyze nutrition facts for your food items to generate a cart score.</p>
                 
                 <button
@@ -76,7 +76,7 @@ const AIScore = ({ cartItems, setView }) => {
                     <span className="text-xl font-bold text-green-300">/10</span>
                   </div>
                   <h2 className="text-2xl font-bold text-gray-800">Your Cart Score</h2>
-                  <p className="text-gray-500">Based on processed content and macro balance.</p>
+                  <p className="text-gray-500">Based on processed item content and nutrient balance.</p>
                 </div>
 
                 <hr className="border-gray-100" />
