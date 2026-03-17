@@ -1,9 +1,14 @@
 import axios from "axios";
 
+// Determine the base URL based on the environment
+const BASE_URL = process.env.NODE_ENV === "production" 
+    ? "https://freshcart-backend-yoc7.onrender.com" 
+    : "http://localhost:5000";
+
 export const axiosInstance = axios.create({
-    baseURL: "http://localhost:5000",
+    baseURL: BASE_URL,
     withCredentials: true,
-     headers: {
+    headers: {
         'Content-Type': 'application/json'
     }
 });

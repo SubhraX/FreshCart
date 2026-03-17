@@ -16,7 +16,7 @@ const app = express();
 
 // 3. Middlewares
 app.use(cors({
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "https://freshcart-cfsv.onrender.com"],
     credentials: true,
 }));
 
