@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User, ChevronLeft, Eye, EyeOff } from 'lucide-react';
+// This now uses your configured baseURL (localhost or Render backend)
+import { axiosInstance } from '../utils/axios.js';
 
 const LOGIN_ENDPOINT = '/api/auth/login';
 const SIGNUP_ENDPOINT = '/api/auth/signup';
@@ -7,11 +9,9 @@ const SIGNUP_ENDPOINT = '/api/auth/signup';
 const FormInput = ({ icon, type, placeholder, value, onChange, id, children }) => (
   <div className="relative mb-6">
     <label htmlFor={id} className="sr-only">{placeholder}</label>
-
     <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
       {React.createElement(icon, { className: 'text-gray-400', size: 20 })}
     </div>
-
     <input
       id={id}
       type={type}
@@ -21,19 +21,16 @@ const FormInput = ({ icon, type, placeholder, value, onChange, id, children }) =
       className="w-full pl-12 pr-4 py-3 bg-gray-100 border-2 border-transparent rounded-lg focus:outline-none focus:bg-white focus:border-green-500 transition-all"
       required
     />
-
     {children}
   </div>
 );
 
 const LoginPage = ({ setView }) => {
   const [isLoginView, setIsLoginView] = useState(true);
-
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -66,71 +63,50 @@ const LoginPage = ({ setView }) => {
     setSuccessMessage('');
 
     try {
+      let response;
+
       if (isLoginView) {
-        // LOGIN
-        const res = await fetch(LOGIN_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email.trim(), password }),
+        // --- LOGIN USING AXIOS ---
+        response = await axiosInstance.post(LOGIN_ENDPOINT, {
+          email: email.trim(),
+          password,
         });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.message || 'Login failed.');
-
-        if (data.token) {
-          localStorage.setItem('auth_token', data.token);
-        }
-
-        const userData = data.user || {
-          name: email.split('@')[0],
-          email: email
-        };
-
-        localStorage.setItem('user', JSON.stringify(userData));
-
+        
         setSuccessMessage('Login successful! Redirecting...');
-
-        setTimeout(() => {
-          setView({ name: 'home' });
-          window.location.reload();
-        }, 600);
-
       } else {
-        // SIGNUP
-        const res = await fetch(SIGNUP_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: name.trim(),
-            email: email.trim(),
-            password
-          }),
+        // --- SIGNUP USING AXIOS ---
+        response = await axiosInstance.post(SIGNUP_ENDPOINT, {
+          name: name.trim(),
+          email: email.trim(),
+          password,
         });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.message || 'Sign up failed.');
-
+        
         setSuccessMessage('Account created! Logging you in...');
-
-        if (data.token) {
-          localStorage.setItem('auth_token', data.token);
-        }
-
-        const userData = data.user || {
-          name: name,
-          email: email
-        };
-
-        localStorage.setItem('user', JSON.stringify(userData));
-
-        setTimeout(() => {
-          setView({ name: 'home' });
-          window.location.reload();
-        }, 700);
       }
 
+      const data = response.data;
+
+      // Handle Token and User storage
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+      }
+
+      const userData = data.user || {
+        name: isLoginView ? email.split('@')[0] : name,
+        email: email
+      };
+
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      setTimeout(() => {
+        setView({ name: 'home' });
+        window.location.reload();
+      }, 700);
+
     } catch (err) {
-      setErrorMessage(err.message || 'Something went wrong.');
+      // Axios puts the server response in err.response
+      const errorMsg = err.response?.data?.message || err.message || 'Something went wrong.';
+      setErrorMessage(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -151,7 +127,6 @@ const LoginPage = ({ setView }) => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 pt-20 px-4">
-
       <button
         onClick={() => setView({ name: 'home' })}
         className="absolute top-20 left-4 sm:left-10 flex items-center text-sm text-green-600 hover:text-green-700 transition-colors font-medium"
@@ -160,7 +135,6 @@ const LoginPage = ({ setView }) => {
       </button>
 
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 sm:p-12">
-
         <div className="text-center mb-8">
           <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-green-700">
             {isLoginView ? 'Welcome Back!' : 'Create Account'}
@@ -190,10 +164,14 @@ const LoginPage = ({ setView }) => {
         </div>
 
         {errorMessage && (
-          <div className="mb-4 text-sm text-red-600">{errorMessage}</div>
+          <div className="mb-4 text-sm text-red-600 p-2 bg-red-50 rounded border border-red-100">
+            {errorMessage}
+          </div>
         )}
         {successMessage && (
-          <div className="mb-4 text-sm text-green-700">{successMessage}</div>
+          <div className="mb-4 text-sm text-green-700 p-2 bg-green-50 rounded border border-green-100">
+            {successMessage}
+          </div>
         )}
 
         <form onSubmit={handleSubmit}>
@@ -234,7 +212,7 @@ const LoginPage = ({ setView }) => {
             <button
               type="button"
               onClick={() => setShowPassword((s) => !s)}
-              className="absolute inset-y-0 right-0 flex items-center pr-3"
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -252,7 +230,6 @@ const LoginPage = ({ setView }) => {
               : (isLoginView ? 'Login' : 'Create My Account')}
           </button>
         </form>
-
       </div>
     </div>
   );

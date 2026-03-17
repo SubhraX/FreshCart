@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import { axiosInstance } from '../utils/axios.js';
 
 const AIRecipePage = ({ setView, onAddToCart }) => {
 
@@ -17,15 +18,10 @@ const AIRecipePage = ({ setView, onAddToCart }) => {
     try {
       setLoading(true);
 
-      const response = await fetch("http://localhost:5000/api/ai/recipe", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ dish })
-      });
+      // Switched from fetch to axiosInstance
+      const response = await axiosInstance.post("/api/ai/recipe", { dish });
 
-      const data = await response.json();
+      const data = response.data;
 
       // ✅ SAFETY CHECK
       if (!data.ingredients || !Array.isArray(data.ingredients)) {
@@ -38,7 +34,9 @@ const AIRecipePage = ({ setView, onAddToCart }) => {
       setCurrentIndex(0);
 
     } catch (error) {
-      toast.error("AI fetch failed");
+      // Axios error handling
+      const errorMsg = error.response?.data?.message || "AI fetch failed";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

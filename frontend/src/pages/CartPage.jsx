@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ChevronLeft, Trash2, Plus, Minus, ShoppingBag, CreditCard, MapPin } from 'lucide-react';
 import { toast } from "react-toastify";
+import { axiosInstance } from '../utils/axios.js';
+
 
 const CartPage = ({ cartItems, onAddToCart, setView }) => {
 
@@ -34,16 +36,14 @@ const CartPage = ({ cartItems, onAddToCart, setView }) => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/payment/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: cartItems,
-          deliveryFee: deliveryFee
-        }),
+      // Switched from fetch to axiosInstance for production compatibility
+      const response = await axiosInstance.post("/api/payment/create-checkout-session", {
+        items: cartItems,
+        deliveryFee: deliveryFee,
+        address: address // Including address in case your backend needs it
       });
 
-      const data = await response.json();
+      const data = response.data;
 
       if (!data.url) {
         toast.error("Failed to create checkout session.", {
@@ -62,7 +62,8 @@ const CartPage = ({ cartItems, onAddToCart, setView }) => {
 
     } catch (error) {
       console.error(error);
-      toast.error("Payment failed. Please try again.", {
+      const errorMsg = error.response?.data?.message || "Payment failed. Please try again.";
+      toast.error(errorMsg, {
         toastId: "payment-error"
       });
     }
@@ -128,7 +129,7 @@ const CartPage = ({ cartItems, onAddToCart, setView }) => {
                   <div className="flex items-center mt-3 bg-gray-50 rounded-lg border w-fit">
                     <button
                       onClick={() => onAddToCart(item, item.quantity - 1)}
-                      className="p-2"
+                      className="p-2 hover:text-green-600 transition-colors"
                     >
                       <Minus size={16} />
                     </button>
@@ -139,7 +140,7 @@ const CartPage = ({ cartItems, onAddToCart, setView }) => {
 
                     <button
                       onClick={() => onAddToCart(item, item.quantity + 1)}
-                      className="p-2"
+                      className="p-2 hover:text-green-600 transition-colors"
                     >
                       <Plus size={16} />
                     </button>
@@ -152,7 +153,7 @@ const CartPage = ({ cartItems, onAddToCart, setView }) => {
                   </p>
                   <button
                     onClick={() => onAddToCart(item, 0)}
-                    className="text-red-500 mt-3"
+                    className="text-red-500 mt-3 hover:text-red-700 transition-colors"
                   >
                     <Trash2 size={20} />
                   </button>
@@ -176,7 +177,7 @@ const CartPage = ({ cartItems, onAddToCart, setView }) => {
                 value={address.fullName}
                 onChange={handleAddressChange}
                 placeholder="Full Name"
-                className="border p-3 rounded-xl"
+                className="border p-3 rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
               />
 
               <input
@@ -185,7 +186,7 @@ const CartPage = ({ cartItems, onAddToCart, setView }) => {
                 value={address.phone}
                 onChange={handleAddressChange}
                 placeholder="Phone Number"
-                className="border p-3 rounded-xl"
+                className="border p-3 rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
               />
 
               <input
@@ -194,7 +195,7 @@ const CartPage = ({ cartItems, onAddToCart, setView }) => {
                 value={address.pincode}
                 onChange={handleAddressChange}
                 placeholder="Pincode"
-                className="border p-3 rounded-xl"
+                className="border p-3 rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
               />
 
               <textarea
@@ -203,7 +204,7 @@ const CartPage = ({ cartItems, onAddToCart, setView }) => {
                 onChange={handleAddressChange}
                 placeholder="Street Address"
                 rows="2"
-                className="border p-3 rounded-xl md:col-span-2"
+                className="border p-3 rounded-xl md:col-span-2 focus:ring-2 focus:ring-green-500 outline-none"
               />
 
               <input
@@ -212,7 +213,7 @@ const CartPage = ({ cartItems, onAddToCart, setView }) => {
                 value={address.city}
                 onChange={handleAddressChange}
                 placeholder="City & State"
-                className="border p-3 rounded-xl md:col-span-2"
+                className="border p-3 rounded-xl md:col-span-2 focus:ring-2 focus:ring-green-500 outline-none"
               />
 
             </div>
@@ -233,7 +234,9 @@ const CartPage = ({ cartItems, onAddToCart, setView }) => {
 
             <div className="flex justify-between mb-4">
               <span>Delivery</span>
-              <span>{deliveryFee === 0 ? "FREE" : `₹${deliveryFee}`}</span>
+              <span className={deliveryFee === 0 ? "text-green-600 font-bold" : ""}>
+                {deliveryFee === 0 ? "FREE" : `₹${deliveryFee}`}
+              </span>
             </div>
 
             <div className="flex justify-between text-2xl font-black mb-6">
@@ -245,7 +248,7 @@ const CartPage = ({ cartItems, onAddToCart, setView }) => {
 
             <button
               onClick={handleCheckout}
-              className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold hover:bg-green-700 transition-all"
+              className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold hover:bg-green-700 transition-all shadow-lg active:scale-95"
             >
               <CreditCard size={18} className="inline mr-2" />
               Proceed to Payment
