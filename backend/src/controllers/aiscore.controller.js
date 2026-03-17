@@ -77,7 +77,7 @@ Return ONLY a JSON object with the TOTAL sum of these values:
     // 4️⃣ Call Python ML Model (Windows compatible)
     const scriptPath = path.resolve("ai/predict.py");
     // Use "python" or "py" depending on your environment
-    const python = spawn("python", [
+    const python = spawn("python3", [
       scriptPath,
       JSON.stringify(features)
     ]);
