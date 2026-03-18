@@ -48,8 +48,8 @@ router.post("/create-checkout-session", async (req, res) => {
       payment_method_types: ["card"],
       mode: "payment",
       line_items: lineItems,
-      success_url: "http://localhost:3000/success",
-      cancel_url: "http://localhost:3000/cart",
+      success_url: "https://freshcart-cfsv.onrender.com/success",
+      cancel_url: "https://freshcart-cfsv.onrender.com/cart",
     });
 
     res.status(200).json({ url: session.url });
