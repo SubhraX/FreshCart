@@ -70,7 +70,7 @@ const AIScore = ({ cartItems, setView }) => {
                   {loading ? (
                     <div className="flex items-center justify-center space-x-3">
                       <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span className="tracking-wide">AI Handshake in Progress...</span>
+                      <span className="tracking-wide">AI Analysis in Progress...</span>
                     </div>
                   ) : "Rate My Cart"}
                 </button>
